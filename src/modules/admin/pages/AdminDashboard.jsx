@@ -12,13 +12,24 @@ const AdminDashboard = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
+        // Check if token exists
+        const token = localStorage.getItem('token');
+        console.log('🔑 Token exists:', !!token);
+        console.log('🔑 Token value:', token ? token.substring(0, 20) + '...' : 'NO TOKEN');
+        
         const [ordersRes, statsRes] = await Promise.all([
              axiosClient.get("/orders"),
              axiosClient.get("/stats")
         ]);
+        console.log('✅ Orders response:', ordersRes.data);
+        console.log('✅ Stats response:', statsRes.data);
         setRecentOrders(ordersRes.data.slice(0, 5)); 
         setStats(statsRes.data);
-      } catch (error) { console.error(error); } 
+      } catch (error) { 
+        console.error('❌ Dashboard fetch error:', error);
+        console.error('❌ Error response:', error.response?.data);
+        console.error('❌ Error status:', error.response?.status);
+      } 
       finally { setLoading(false); }
     };
     fetchData();

@@ -1,10 +1,18 @@
+// CRITICAL: Load environment variables FIRST before any other imports
+// This ensures JWT_SECRET is available when the container is initialized
+require('dotenv').config();
+
+// Debug: Verify JWT_SECRET is loaded
+console.log('🔑 JWT_SECRET loaded:', process.env.JWT_SECRET ? 'YES ✅' : 'NO ❌');
+if (!process.env.JWT_SECRET) {
+  console.error('❌ WARNING: JWT_SECRET not found in .env file!');
+}
+
 const express = require('express');
 const cors = require('cors');
-const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 const apiRoutes = require('./routes/index'); // Import file gộp routes
 
-dotenv.config();
 connectDB();
 
 const app = express();
