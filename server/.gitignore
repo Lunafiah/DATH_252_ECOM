@@ -1,0 +1,4 @@
+# Add test coverage reports to gitignore
+coverage/
+*.log
+.env.test

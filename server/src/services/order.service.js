@@ -1,64 +1,68 @@
-const Order = require('../models/order.model');
-const Product = require('../models/product.model');
-
+/**
+ * Order Service
+ * Handles order management
+ * Refactored to use dependency injection and delegate inventory to InventoryService
+ */
 class OrderService {
   
-  // 1. Tạo đơn hàng (Kèm logic trừ kho)
+  constructor(orderRepository, inventoryService) {
+    this.orderRepository = orderRepository;
+    this.inventoryService = inventoryService;
+  }
+
+  /**
+   * Create a new order
+   * @param {Object} orderData - Order data
+   * @returns {Promise<Object>}
+   */
   async createOrder(orderData) {
     const { items } = orderData;
 
-    // Kiểm tra và trừ tồn kho
-    // Dùng vòng lặp for...of để có thể dùng await bên trong
-    for (const item of items) {
-      // Tìm sản phẩm theo TÊN (vì Frontend gửi lên trường 'title')
-      // xác nhận frontend dùng item.title
-      const product = await Product.findOne({ title: item.title });
-      
-      // Nếu không tìm thấy sản phẩm trong DB
-      if (!product) {
-        throw new Error(`Sản phẩm "${item.title}" không tồn tại trong hệ thống`);
-      }
-      
-      // Kiểm tra số lượng tồn kho
-      if (product.countInStock < item.qty) {
-        throw new Error(`Sản phẩm "${product.title}" không đủ hàng (Hiện còn: ${product.countInStock})`);
-      }
-      
-      // Trừ kho và lưu lại
-      product.countInStock -= item.qty;
-      await product.save();
-    }
+    // Reserve stock using InventoryService (SRP compliance)
+    await this.inventoryService.reserveStock(items);
 
-    // Sau khi check kho xong xuôi thì mới tạo đơn hàng
-    const order = new Order(orderData);
-    return await order.save();
+    // Create order after successful stock reservation
+    const order = await this.orderRepository.create(orderData);
+    return order;
   }
 
-  // 2. Lấy đơn hàng của một user cụ thể (Sắp xếp mới nhất lên đầu)
+  /**
+   * Get orders by customer email
+   * @param {string} email - Customer email
+   * @returns {Promise<Array>}
+   */
   async getOrdersByUserEmail(email) {
-    return await Order.find({ "customer.email": email }).sort({ createdAt: -1 });
+    return await this.orderRepository.findByCustomerEmail(email);
   }
 
-  // 3. Lấy tất cả đơn hàng (Dành cho Admin)
+  /**
+   * Get all orders (Admin)
+   * @returns {Promise<Array>}
+   */
   async getAllOrders() {
-    return await Order.find({}).sort({ createdAt: -1 });
+    return await this.orderRepository.findAllSorted();
   }
 
-  // 4. Lấy chi tiết đơn hàng theo ID
+  /**
+   * Get order by ID
+   * @param {string} orderId - Order ID
+   * @returns {Promise<Object>}
+   */
   async getOrderById(orderId) {
-    const order = await Order.findById(orderId);
+    const order = await this.orderRepository.findById(orderId);
     if (!order) throw new Error('Không tìm thấy đơn hàng');
     return order;
   }
 
-  // 5. Cập nhật trạng thái đơn hàng (Admin)
+  /**
+   * Update order status (Admin)
+   * @param {string} orderId - Order ID
+   * @param {string} status - New status
+   * @returns {Promise<Object>}
+   */
   async updateStatus(orderId, status) {
-    const order = await Order.findById(orderId);
-    if (!order) throw new Error('Không tìm thấy đơn hàng');
-    
-    order.status = status;
-    return await order.save();
+    return await this.orderRepository.updateStatus(orderId, status);
   }
 }
 
-module.exports = new OrderService();
+module.exports = OrderService;

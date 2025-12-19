@@ -1,26 +1,32 @@
-const AuthService = require('../services/auth.service');
+const container = require('../config/container');
+const authService = container.getService('auth');
 
-// 1. Đăng ký
+/**
+ * Auth Controller
+ * Handles HTTP requests for authentication
+ */
+
+// 1. Register
 exports.registerUser = async (req, res) => {
   try {
     const { name, email, password } = req.body;
     
-    const userInfo = await AuthService.register(name, email, password);
+    const userInfo = await authService.register(name, email, password);
     
     // 201 Created
     res.status(201).json(userInfo);
   } catch (error) {
-    // Trả về 400 Bad Request nếu lỗi logic (trùng mail, thiếu data...)
+    // Return 400 Bad Request for validation errors
     res.status(400).json({ message: error.message });
   }
 };
 
-// 2. Đăng nhập
+// 2. Login
 exports.loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const userInfo = await AuthService.login(email, password);
+    const userInfo = await authService.login(email, password);
     
     res.json(userInfo);
   } catch (error) {

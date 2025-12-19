@@ -1,31 +1,32 @@
-const Order = require('../models/order.model');
-const Product = require('../models/product.model');
-const User = require('../models/user.model');
-
+/**
+ * Stats Service
+ * Handles dashboard statistics
+ * Refactored to use dependency injection (DIP compliance)
+ */
 class StatsService {
   
+  constructor(orderRepository, productRepository, userRepository) {
+    this.orderRepository = orderRepository;
+    this.productRepository = productRepository;
+    this.userRepository = userRepository;
+  }
+
+  /**
+   * Get dashboard statistics
+   * @returns {Promise<Object>}
+   */
   async getDashboardStats() {
-    // 1. Đếm tổng số đơn hàng
-    const totalOrders = await Order.countDocuments();
+    // 1. Count total orders
+    const totalOrders = await this.orderRepository.count();
 
-    // 2. Đếm tổng số sản phẩm
-    const totalProducts = await Product.countDocuments();
+    // 2. Count total products
+    const totalProducts = await this.productRepository.count();
 
-    // 3. Đếm tổng số khách hàng (trừ admin ra)
-    const totalUsers = await User.countDocuments({ role: 'customer' });
+    // 3. Count total customers (exclude admin)
+    const totalUsers = await this.userRepository.count({ role: 'customer' });
 
-    // 4. Tính tổng doanh thu (Logic phức tạp nhất nằm ở đây)
-    // Dùng hàm aggregate của MongoDB để cộng dồn field totalAmount
-    const revenueData = await Order.aggregate([
-      {
-        $group: {
-          _id: null, // Gom tất cả lại thành 1 nhóm
-          totalRevenue: { $sum: "$totalAmount" } // Cộng dồn tiền
-        }
-      }
-    ]);
-    
-    const totalRevenue = revenueData.length > 0 ? revenueData[0].totalRevenue : 0;
+    // 4. Calculate total revenue
+    const totalRevenue = await this.orderRepository.getTotalRevenue();
 
     return {
       totalOrders,
@@ -36,4 +37,4 @@ class StatsService {
   }
 }
 
-module.exports = new StatsService();
+module.exports = StatsService;

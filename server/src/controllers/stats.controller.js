@@ -1,9 +1,10 @@
-const StatsService = require('../services/stats.service');
+const container = require('../config/container');
+const statsService = container.getService('stats');
 
 exports.getDashboardStats = async (req, res) => {
   try {
-    // Controller gọi Service: "Ê, lấy cho tao số liệu báo cáo"
-    const stats = await StatsService.getDashboardStats();
+    // Controller calls Service to get dashboard stats
+    const stats = await statsService.getDashboardStats();
     
     // Sau đó trả kết quả về cho Client
     res.json(stats);

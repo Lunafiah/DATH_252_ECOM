@@ -1,37 +1,59 @@
-const Coupon = require('../models/coupon.model');
-
+/**
+ * Coupon Service
+ * Handles coupon management and validation
+ * Refactored to use dependency injection (DIP compliance)
+ */
 class CouponService {
   
-  // Tạo mã
+  constructor(couponRepository) {
+    this.couponRepository = couponRepository;
+  }
+
+  /**
+   * Create a new coupon
+   * @param {Object} data - Coupon data
+   * @returns {Promise<Object>}
+   */
   async createCoupon(data) {
     const { name, expiry, discount } = data;
     
-    // Logic check trùng
-    const existingCoupon = await Coupon.findOne({ name: name.toUpperCase() });
+    // Check for duplicate
+    const existingCoupon = await this.couponRepository.findByName(name);
     if (existingCoupon) {
       throw new Error("Mã giảm giá này đã tồn tại!");
     }
     
-    return await new Coupon({ name, expiry, discount }).save();
+    return await this.couponRepository.create({ name: name.toUpperCase(), expiry, discount });
   }
 
-  // Lấy danh sách
+  /**
+   * Get all coupons
+   * @returns {Promise<Array>}
+   */
   async listCoupons() {
-    return await Coupon.find({}).sort({ createdAt: -1 });
+    return await this.couponRepository.findAllSorted();
   }
 
-  // Xóa mã
+  /**
+   * Delete a coupon
+   * @param {string} id - Coupon ID
+   * @returns {Promise<Object>}
+   */
   async deleteCoupon(id) {
-    return await Coupon.findByIdAndDelete(id);
+    return await this.couponRepository.delete(id);
   }
 
-  // Kiểm tra & Áp dụng mã (Logic quan trọng)
+  /**
+   * Apply and validate a coupon
+   * @param {string} codeName - Coupon code
+   * @returns {Promise<Object>}
+   */
   async applyCoupon(codeName) {
-    const coupon = await Coupon.findOne({ name: codeName.toUpperCase() });
+    const coupon = await this.couponRepository.findByName(codeName);
 
     if (!coupon) throw new Error("Mã giảm giá không hợp lệ!");
 
-    // Logic check hết hạn
+    // Check expiry
     if (new Date() > new Date(coupon.expiry)) {
       throw new Error("Mã giảm giá đã hết hạn!");
     }
@@ -44,4 +66,4 @@ class CouponService {
   }
 }
 
-module.exports = new CouponService();
+module.exports = CouponService;

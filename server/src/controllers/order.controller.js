@@ -1,4 +1,5 @@
-const OrderService = require('../services/order.service');
+const container = require('../config/container');
+const orderService = container.getService('order');
 
 // 1. Tạo đơn hàng
 exports.createOrder = async (req, res) => {
@@ -10,7 +11,7 @@ exports.createOrder = async (req, res) => {
     }
 
     // Gọi Service để xử lý
-    const createdOrder = await OrderService.createOrder(orderData);
+    const createdOrder = await orderService.createOrder(orderData);
     
     res.status(201).json(createdOrder);
   } catch (error) {
@@ -23,7 +24,7 @@ exports.createOrder = async (req, res) => {
 exports.getMyOrders = async (req, res) => {
   try {
     const email = req.query.email; // Hoặc lấy từ req.user.email nếu muốn bảo mật hơn
-    const orders = await OrderService.getOrdersByUserEmail(email);
+    const orders = await orderService.getOrdersByUserEmail(email);
     res.json(orders);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -33,7 +34,7 @@ exports.getMyOrders = async (req, res) => {
 // 3. Admin lấy tất cả đơn hàng
 exports.getAllOrders = async (req, res) => {
   try {
-    const orders = await OrderService.getAllOrders();
+    const orders = await orderService.getAllOrders();
     res.json(orders);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -46,7 +47,7 @@ exports.updateOrderStatus = async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
     
-    const updatedOrder = await OrderService.updateStatus(id, status);
+    const updatedOrder = await orderService.updateStatus(id, status);
     res.json(updatedOrder);
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -56,7 +57,7 @@ exports.updateOrderStatus = async (req, res) => {
 // 5. Xem chi tiết đơn hàng (Kèm bảo mật)
 exports.getOrderById = async (req, res) => {
   try {
-    const order = await OrderService.getOrderById(req.params.id);
+    const order = await orderService.getOrderById(req.params.id);
 
     // Logic kiểm tra quyền xem vẫn nên để ở Controller (hoặc Middleware)
     const isOwner = order.customer.email === req.user.email;
