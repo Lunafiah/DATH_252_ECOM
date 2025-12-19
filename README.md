@@ -264,7 +264,6 @@ Xem thêm: [Testing Documentation](./server/TESTING_IMPLEMENTATION_SUMMARY.md)
 ### Testing
 
 - [Testing Implementation Summary](./server/TESTING_IMPLEMENTATION_SUMMARY.md) - Tổng quan testing
-- [Testable Modules Analysis](./testable_modules_analysis.md) - Phân tích modules cần test
 
 ### Changelog
 
