@@ -1,23 +1,31 @@
-const User = require('../models/user.model');
-const jwt = require('jsonwebtoken');
-
+/**
+ * Authentication Service
+ * Handles user registration and login
+ * Refactored to use dependency injection (DIP compliance)
+ */
 class AuthService {
   
-  // Helper: Sinh Token (Private method)
-  generateToken(id) {
-    return jwt.sign({ id }, process.env.JWT_SECRET || 'secret123', { expiresIn: '30d' });
+  constructor(userRepository, tokenService) {
+    this.userRepository = userRepository;
+    this.tokenService = tokenService;
   }
 
-  // 1. Đăng ký
+  /**
+   * Register a new user
+   * @param {string} name - User name
+   * @param {string} email - User email
+   * @param {string} password - User password
+   * @returns {Promise<Object>}
+   */
   async register(name, email, password) {
-    // Kiểm tra trùng
-    const userExists = await User.findOne({ email });
+    // Check if email already exists
+    const userExists = await this.userRepository.findByEmail(email);
     if (userExists) {
       throw new Error('Email này đã được sử dụng');
     }
 
-    // Tạo User
-    const user = await User.create({ name, email, password });
+    // Create user
+    const user = await this.userRepository.create({ name, email, password });
 
     if (user) {
       return {
@@ -25,25 +33,30 @@ class AuthService {
         name: user.name,
         email: user.email,
         role: user.role,
-        token: this.generateToken(user._id)
+        token: this.tokenService.generate(user._id)
       };
     } else {
       throw new Error('Dữ liệu người dùng không hợp lệ');
     }
   }
 
-  // 2. Đăng nhập
+  /**
+   * Login user
+   * @param {string} email - User email
+   * @param {string} password - User password
+   * @returns {Promise<Object>}
+   */
   async login(email, password) {
-    const user = await User.findOne({ email });
+    const user = await this.userRepository.findByEmail(email);
 
-    // Kiểm tra user và pass (hàm matchPassword nằm trong User Model)
+    // Check user and password (matchPassword method is in User Model)
     if (user && (await user.matchPassword(password))) {
       return {
         _id: user._id,
         name: user.name,
         email: user.email,
         role: user.role,
-        token: this.generateToken(user._id)
+        token: this.tokenService.generate(user._id)
       };
     } else {
       throw new Error('Sai email hoặc mật khẩu');
@@ -51,4 +64,4 @@ class AuthService {
   }
 }
 
-module.exports = new AuthService();
+module.exports = AuthService;

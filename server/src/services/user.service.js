@@ -1,17 +1,29 @@
-const User = require('../models/user.model');
-
+/**
+ * User Service
+ * Handles user profile and address management
+ * Refactored to use dependency injection (DIP compliance)
+ */
 class UserService {
 
-  // 1. Cập nhật hồ sơ
+  constructor(userRepository) {
+    this.userRepository = userRepository;
+  }
+
+  /**
+   * Update user profile
+   * @param {string} userId - User ID
+   * @param {Object} updateData - Data to update
+   * @returns {Promise<Object>}
+   */
   async updateProfile(userId, updateData) {
-    const user = await User.findById(userId);
+    const user = await this.userRepository.findById(userId);
     if (!user) throw new Error('Không tìm thấy người dùng');
 
-    // Cập nhật tên
+    // Update name
     if (updateData.name) user.name = updateData.name;
     
-    // Cập nhật mật khẩu (nếu có)
-    // Lưu ý: Model User cần có middleware 'pre save' để hash password
+    // Update password (if provided)
+    // Note: User Model has 'pre save' middleware to hash password
     if (updateData.password) {
       user.password = updateData.password;
     }
@@ -19,33 +31,25 @@ class UserService {
     return await user.save();
   }
 
-  // 2. Thêm địa chỉ mới
+  /**
+   * Add address to user
+   * @param {string} userId - User ID
+   * @param {Object} addressData - Address data
+   * @returns {Promise<Array>}
+   */
   async addAddress(userId, addressData) {
-    const user = await User.findById(userId);
-    if (!user) throw new Error('User not found');
-
-    const { street, city, phone } = addressData;
-
-    // Thêm vào đầu mảng
-    // Logic: Nếu chưa có địa chỉ nào thì cái đầu tiên là mặc định
-    const isDefault = user.addresses.length === 0;
-    
-    user.addresses.unshift({ street, city, phone, isDefault });
-    
-    await user.save();
-    return user.addresses;
+    return await this.userRepository.addAddress(userId, addressData);
   }
 
-  // 3. Xóa địa chỉ
+  /**
+   * Delete address from user
+   * @param {string} userId - User ID
+   * @param {string} addressId - Address ID
+   * @returns {Promise<Array>}
+   */
   async deleteAddress(userId, addressId) {
-    const user = await User.findById(userId);
-    if (!user) throw new Error('User not found');
-
-    user.addresses = user.addresses.filter(addr => addr._id.toString() !== addressId);
-    
-    await user.save();
-    return user.addresses;
+    return await this.userRepository.deleteAddress(userId, addressId);
   }
 }
 
-module.exports = new UserService();
+module.exports = UserService;
