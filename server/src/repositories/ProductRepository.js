@@ -126,6 +126,20 @@ class ProductRepository extends IRepository {
   async insertMany(products) {
     return await Product.insertMany(products);
   }
+
+  async create(data) {
+    // Tạo ID tự động nếu không có
+    const lastProduct = await Product.findOne().sort({ id: -1 });
+    const nextId = lastProduct ? lastProduct.id + 1 : 1;
+    
+    const product = new Product({
+        ...data,
+        id: data.id || nextId, // Tạo ID tự động
+        countInStock: data.countInStock || 0,
+        rating: data.rating || { rate: 5, count: 0 }
+    });
+    return await product.save();
+  } 
 }
 
 module.exports = ProductRepository;
