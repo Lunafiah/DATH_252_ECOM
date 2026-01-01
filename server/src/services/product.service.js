@@ -53,7 +53,8 @@ class ProductService {
    * @returns {Promise<Object>}
    */
   async createProduct(productData) {
-    return await this.productRepository.create(productData);
+    const validatedData = this.validateProductData(productData);
+    return await this.productRepository.create(validatedData);
   }
 
   /**
@@ -74,6 +75,34 @@ class ProductService {
   async deleteProduct(id) {
     return await this.productRepository.delete(id);
   }
+
+  validateProductData(productData) {
+    const requiredFields = ['title', 'price', 'category', 'image'];
+    const missingFields = requiredFields.filter(field => !productData[field]);
+    
+    if (missingFields.length > 0) {
+        throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
+    }
+
+    // Validate fabrics if exists
+    if (productData.fabrics && Array.isArray(productData.fabrics)) {
+        productData.fabrics = productData.fabrics.filter(fabric => 
+            fabric.name && fabric.image // Chỉ giữ fabric hợp lệ
+        );
+    }
+    
+    // Set defaults
+    return {
+        ...productData,
+        rating: productData.rating || { rate: 5, count: 0 },
+        countInStock: Number(productData.countInStock) || 0,
+        isOnSale: productData.isOnSale || false,
+        salePercentage: productData.salePercentage || 0,
+        isBestSeller: productData.isBestSeller || false,
+        fabrics: productData.fabrics || []
+    };
+}
+
 }
 
 module.exports = ProductService;

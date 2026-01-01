@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import toast from "react-hot-toast";
 
 const ProductModal = ({ show, onClose, onSubmit, initialData }) => {
   const defaultData = {
@@ -29,10 +30,59 @@ const ProductModal = ({ show, onClose, onSubmit, initialData }) => {
   const addFabric = () => setFormData({ ...formData, fabrics: [...(formData.fabrics || []), { name: "", image: "", extraPrice: 0 }] });
   const removeFabric = (index) => setFormData({ ...formData, fabrics: formData.fabrics.filter((_, i) => i !== index) });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onSubmit(formData);
-  };
+    
+    // Validate required fields
+    if (!formData.title || !formData.price || !formData.category || !formData.image) {
+        toast.error("Please fill in required fields: Title, Price, Category, Main Image");
+        return;
+    }
+    
+    // Validate price and stock
+    if (Number(formData.price) <= 0) {
+        toast.error("Price must be greater than 0");
+        return;
+    }
+    
+    if (Number(formData.countInStock) < 0) {
+        toast.error("Stock cannot be negative");
+        return;
+    }
+    
+    // Prepare data for API
+    const payload = {
+        ...formData,
+        price: Number(formData.price),
+        countInStock: Number(formData.countInStock),
+        // Ensure fabrics have required fields
+        fabrics: formData.fabrics
+            .filter(f => f.name && f.image) // Only keep valid fabrics
+            .map(f => ({
+                ...f,
+                extraPrice: Number(f.extraPrice) || 0
+            })),
+        // Set default rating
+        rating: formData.rating || { rate: 5, count: 0 },
+        // Default values for missing fields
+        isOnSale: formData.isOnSale || false,
+        salePercentage: formData.salePercentage || 0
+    };
+    
+    // Remove empty strings from optional fields
+    Object.keys(payload).forEach(key => {
+        if (payload[key] === "" && key !== "description") {
+            delete payload[key];
+        }
+    });
+    
+    try {
+        onSubmit(payload);
+    } catch (error) {
+        toast.error("Error preparing product data");
+        console.error(error);
+    }
+};
 
   if (!show) return null;
 

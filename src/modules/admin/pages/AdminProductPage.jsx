@@ -41,21 +41,24 @@ const AdminProductPage = () => {
   };
 
   const handleFormSubmit = async (formData) => {
-      try {
-          if (editingProduct) {
-              await axiosClient.put(`/products/${editingProduct._id}`, formData);
-              toast.success("Product updated successfully");
-          } else {
-              await axiosClient.post("/products", formData);
-              toast.success("Product created successfully");
-          }
-          setShowModal(false);
-          fetchProducts(); 
-      } catch (error) {
-          toast.error("Operation failed");
-          console.error(error);
-      }
-  };
+    try {
+        let response;
+        if (editingProduct) {
+            response = await axiosClient.put(`/products/${editingProduct._id}`, formData);
+            toast.success("Product updated successfully");
+        } else {
+            response = await axiosClient.post("/products", formData);
+            toast.success("Product created successfully");
+        }
+        
+        console.log("✅ Product saved:", response.data);
+        setShowModal(false);
+        fetchProducts();
+    } catch (error) {
+        console.error("❌ Error saving product:", error.response?.data);
+        toast.error(error.response?.data?.message || "Operation failed. Check console for details.");
+    }
+};
 
   return (
     <>
