@@ -9,7 +9,11 @@
     "rating": { "rate": 5.0, "count": 120 },
     "isBestSeller": true,
     "isOnSale": false,
-    "salePercentage": 0
+    "salePercentage": 0,
+    "model3D": {
+      "glb": "https://modelviewer.dev/shared-assets/models/Astronaut.glb",
+      "usdz": "https://modelviewer.dev/shared-assets/models/Astronaut.usdz"
+    }
   },
   {
     "id": 2,
