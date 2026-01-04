@@ -5,6 +5,7 @@ import { addCart } from "../../orders/store/cartSlice";
 import { Navbar, Footer } from "../../../components";
 import axiosClient from "../../../api/axiosClient";
 import SkeletonLoading from "../components/SkeletonLoading";
+import Product3DViewer from "../../../components/Product3DViewer";
 import toast from "react-hot-toast";
 
 const FABRIC_COLLECTIONS = {
@@ -48,6 +49,8 @@ const ProductDetailPage = () => {
       setLoading(true);
       try {
         const { data } = await axiosClient.get(`/products/${id}`);
+        console.log("📦 Product data from API:", data);
+        console.log("🎨 model3D data:", data.model3D);
         setProduct(data);
       } catch (error) { toast.error("Error loading"); } 
       finally { setLoading(false); }
@@ -100,12 +103,19 @@ const ProductDetailPage = () => {
                     <div className="sticky-top" style={{top: "140px", zIndex: 1}}>
                         <div className="w-100 d-flex align-items-center justify-content-center mb-2 position-relative bg-light-gray" style={{height: "75vh"}}>
                             <img src={product.image} alt={product.title} className="img-fluid mix-blend-multiply" style={{maxHeight: "85%", maxWidth: "85%"}} />
-                            
-                            <div className="position-absolute bottom-0 start-50 translate-middle-x mb-4 d-flex gap-3">
-                                <button className="btn btn-white bg-white border rounded-pill px-4 py-2 text-uppercase fw-bold shadow-sm hover-dark" style={{fontSize: "0.75rem", letterSpacing: "1px"}}><i className="fa fa-sync me-2"></i> 360° View</button>
-                                <button className="btn btn-white bg-white border rounded-pill px-4 py-2 text-uppercase fw-bold shadow-sm hover-dark" style={{fontSize: "0.75rem", letterSpacing: "1px"}}><i className="fa fa-search-plus me-2"></i> Zoom</button>
-                            </div>
                         </div>
+                        
+                        {/* 3D Viewer Section */}
+                        {product.model3D?.glb && (
+                          <div className="mt-4">
+                            <Product3DViewer
+                              modelUrl={product.model3D.glb}
+                              iosModelUrl={product.model3D.usdz}
+                              productName={product.title}
+                              poster={product.model3D.thumbnail || product.image}
+                            />
+                          </div>
+                        )}
                     </div>
                 </div>
 
@@ -245,15 +255,7 @@ const ProductDetailPage = () => {
             </div>
         </div>
 
-        <div className="bg-light-gray py-5 mt-5 border-top border-light-gray">
-            <div className="container py-5 text-center">
-                <h4 className="text-uppercase mb-5 fw-bold" style={{letterSpacing: "3px", fontSize: "1.1rem"}}>Dimensions</h4>
-                <div className="bg-white p-5 d-inline-block shadow-sm mb-5">
-                    <img src={product.dimensionImage || "https://www.kingliving.com.au/media/catalog/product/cache/78e8f8a556b46859345c26b86f444850/z/a/zaza_2s_dims_1.jpg"} alt="Dims" className="img-fluid mix-blend-multiply" style={{maxHeight: "350px"}} />
-                </div>
-                <div><button className="btn btn-black rounded-0 px-5 py-3 text-uppercase fw-bold text-white" style={{letterSpacing: "2px", fontSize: "0.85rem"}}>Download Product Card</button></div>
-            </div>
-        </div>
+
 
       </div>
       

@@ -45,6 +45,14 @@ const productSchema = new mongoose.Schema({
     type: String, 
     default: "25 Year Steel Frame Warranty. 10 Year Foam Warranty." 
   },
+  
+  // 4. 3D MODEL SUPPORT (For AR/3D Visualization)
+  model3D: {
+    glb: { type: String }, // For web & Android AR (glTF Binary format)
+    usdz: { type: String }, // For iOS AR (Universal Scene Description)
+    thumbnail: { type: String } // 3D preview thumbnail image
+  },
+  
   countInStock: { type: Number, required: true, default: 0 }
 
 }, { timestamps: true });
