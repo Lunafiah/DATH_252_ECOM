@@ -1,19 +1,36 @@
 import React, { useState, useEffect } from "react";
 import toast from "react-hot-toast";
+import axiosClient from "../../../api/axiosClient";
 
 const ProductModal = ({ show, onClose, onSubmit, initialData }) => {
   const defaultData = {
     title: "", price: "", category: "Living Room", image: "", description: "", isBestSeller: false,
     countInStock: 0, 
     dimensionImage: "", feature_overview: "", shipping_info: "", warranty_info: "",
-    fabrics: []
+    fabrics: [],
+    model3D: { glb: "", usdz: "", thumbnail: "" }
   };
 
   const [formData, setFormData] = useState(defaultData);
-
+  const [selectedGlbFile, setSelectedGlbFile] = useState(null);
+  const [uploadingGlb, setUploadingGlb] = useState(false);
+  
   useEffect(() => {
-    if (initialData) setFormData(initialData);
-    else setFormData(defaultData);
+    if (initialData) {
+      // Ensure model3D exists even if not in database
+      setFormData({
+        ...initialData,
+        model3D: initialData.model3D || { glb: "", usdz: "", thumbnail: "" }
+      });
+    } else {
+      setFormData({
+        title: "", price: "", category: "Living Room", image: "", description: "", isBestSeller: false,
+        countInStock: 0, 
+        dimensionImage: "", feature_overview: "", shipping_info: "", warranty_info: "",
+        fabrics: [],
+        model3D: { glb: "", usdz: "", thumbnail: "" }
+      });
+    }
   }, [initialData, show]);
 
   const handleChange = (e) => {
@@ -50,6 +67,34 @@ const ProductModal = ({ show, onClose, onSubmit, initialData }) => {
         return;
     }
     
+    // NEW: Upload GLB file if selected
+    if (selectedGlbFile) {
+      setUploadingGlb(true);
+      try {
+        const formDataUpload = new FormData();
+        formDataUpload.append('glbFile', selectedGlbFile);
+        
+        const uploadResponse = await axiosClient.post('/upload/glb', formDataUpload, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+        
+        // Update formData with the uploaded file path
+        formData.model3D = {
+          ...formData.model3D,
+          glb: uploadResponse.data.path
+        };
+        
+        toast.success(`GLB file uploaded: ${uploadResponse.data.filename}`);
+      } catch (error) {
+        setUploadingGlb(false);
+        toast.error(error.response?.data?.message || 'GLB upload failed');
+        return; // Stop submission if upload fails
+      }
+      setUploadingGlb(false);
+    }
+    
     // Prepare data for API
     const payload = {
         ...formData,
@@ -69,9 +114,18 @@ const ProductModal = ({ show, onClose, onSubmit, initialData }) => {
         salePercentage: formData.salePercentage || 0
     };
     
-    // Remove empty strings from optional fields
+    // Handle model3D - only include if at least one field has a value
+    if (formData.model3D && (formData.model3D.glb || formData.model3D.usdz || formData.model3D.thumbnail)) {
+        payload.model3D = {
+            glb: formData.model3D.glb || "",
+            usdz: formData.model3D.usdz || "",
+            thumbnail: formData.model3D.thumbnail || ""
+        };
+    }
+    
+    // Remove empty strings from optional fields (but not nested objects)
     Object.keys(payload).forEach(key => {
-        if (payload[key] === "" && key !== "description") {
+        if (payload[key] === "" && key !== "description" && typeof payload[key] !== "object") {
             delete payload[key];
         }
     });
@@ -136,7 +190,45 @@ const ProductModal = ({ show, onClose, onSubmit, initialData }) => {
 
                       <div className="mb-3">
                           <label className="form-label small fw-bold">MAIN IMAGE URL</label>
-                          <input type="text" className="form-control rounded-0" name="image" value={formData.image} onChange={handleChange} />
+                          <div className="input-group">
+                              <input 
+                                type="text" 
+                                className="form-control rounded-0" 
+                                name="image" 
+                                value={formData.image} 
+                                onChange={handleChange}
+                                placeholder="https://example.com/image.jpg or upload below"
+                              />
+                              <label className="btn btn-outline-secondary rounded-0" htmlFor="imageFileUpload">
+                                  <i className="fa fa-upload me-1"></i> Upload Local
+                              </label>
+                              <input 
+                                type="file" 
+                                id="imageFileUpload" 
+                                accept="image/*"
+                                style={{ display: 'none' }}
+                                onChange={(e) => {
+                                  const file = e.target.files[0];
+                                  if (file) {
+                                    const reader = new FileReader();
+                                    reader.onloadend = () => {
+                                      setFormData({ ...formData, image: reader.result });
+                                    };
+                                    reader.readAsDataURL(file);
+                                  }
+                                }}
+                              />
+                          </div>
+                          {formData.image && (
+                            <div className="mt-2">
+                              <img 
+                                src={formData.image} 
+                                alt="Preview" 
+                                style={{ height: "80px", objectFit: "contain", border: "1px solid #ddd", padding: "5px" }}
+                                onError={(e) => { e.target.style.display = 'none'; }}
+                              />
+                            </div>
+                          )}
                       </div>
                       <div className="mb-3">
                           <label className="form-label small fw-bold">DESCRIPTION</label>
@@ -152,9 +244,59 @@ const ProductModal = ({ show, onClose, onSubmit, initialData }) => {
                   <div className="col-lg-6">
                       <h6 className="fw-bold text-uppercase mb-3 border-bottom pb-2">Technical Details</h6>
                       <div className="mb-4">
-                          <label className="form-label small fw-bold">DIMENSION IMAGE URL</label>
-                          <input type="text" className="form-control rounded-0 mb-2" name="dimensionImage" value={formData.dimensionImage} onChange={handleChange} />
-                          {formData.dimensionImage && <img src={formData.dimensionImage} alt="Preview" style={{height: "100px", objectFit: "contain", border: "1px dashed #ccc"}} />}
+                          <label className="form-label small fw-bold">3D GLB FILE URL</label>
+                          <div className="input-group mb-2">
+                              <input 
+                                type="text" 
+                                className="form-control rounded-0" 
+                                name="model3D_glb" 
+                                value={formData.model3D?.glb || ''} 
+                                onChange={(e) => setFormData({
+                                  ...formData, 
+                                  model3D: { 
+                                    ...formData.model3D, 
+                                    glb: e.target.value 
+                                  }
+                                })} 
+                                placeholder="/models/sofa.glb or https://example.com/model.glb"
+                              />
+                              <label className="btn btn-outline-secondary rounded-0" htmlFor="glbFileUpload">
+                                  <i className="fa fa-upload me-1"></i> Upload GLB
+                              </label>
+                              <input 
+                                type="file" 
+                                id="glbFileUpload" 
+                                accept=".glb,.gltf"
+                                style={{ display: 'none' }}
+                                onChange={(e) => {
+                                  const file = e.target.files[0];
+                                  if (file) {
+                                    // Just store the file, don't upload yet
+                                    setSelectedGlbFile(file);
+                                    // Show the filename in the input
+                                    setFormData({
+                                      ...formData,
+                                      model3D: {
+                                        ...formData.model3D,
+                                        glb: file.name // Show filename temporarily
+                                      }
+                                    });
+                                    toast.success(`File selected: ${file.name}`);
+                                  }
+                                }}
+                              />
+                          </div>
+                          {formData.model3D?.glb && (
+                            <small className="text-muted d-block">
+                              <i className="bi bi-check-circle text-success"></i> 
+                              {selectedGlbFile 
+                                ? ` File ready: ${formData.model3D.glb}` 
+                                : ` GLB URL: ${formData.model3D.glb.substring(0, 50)}...`}
+                            </small>
+                          )}
+                          <small className="text-muted d-block mt-1">
+                            <i className="fa fa-info-circle"></i> For best performance, use /models/filename.glb or host on a CDN
+                          </small>
                       </div>
 
                       <div className="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2 mt-5">
@@ -184,7 +326,14 @@ const ProductModal = ({ show, onClose, onSubmit, initialData }) => {
           </div>
           <div className="modal-footer bg-white">
             <button type="button" className="btn btn-outline-secondary rounded-0" onClick={onClose}>Cancel</button>
-            <button type="submit" form="productForm" className="btn btn-dark rounded-0 px-4 fw-bold">{initialData ? "Save Changes" : "Create Product"}</button>
+            <button 
+              type="submit" 
+              form="productForm" 
+              className="btn btn-dark rounded-0 px-4 fw-bold"
+              disabled={uploadingGlb}
+            >
+              {uploadingGlb ? "Uploading GLB..." : (initialData ? "Save Changes" : "Create Product")}
+            </button>
           </div>
         </div>
       </div>

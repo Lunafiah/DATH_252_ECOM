@@ -10,7 +10,7 @@ const { protect, admin } = require('../middlewares/authMiddleware');
 const { getDashboardStats } = require('../controllers/stats.controller');
 const { updateUserProfile, addAddress, deleteAddress } = require('../controllers/user.controller');
 const { createCoupon, listCoupons, deleteCoupon, applyCoupon } = require('../controllers/coupon.controller');
-
+const uploadRoutes = require('./upload_routes');
 // --- AUTH ---
 router.post('/auth/register', registerUser);
 router.post('/auth/login', loginUser);
@@ -49,4 +49,6 @@ router.post('/coupons', protect, admin, createCoupon);
 router.get('/coupons', protect, admin, listCoupons);
 router.delete('/coupons/:id', protect, admin, deleteCoupon);
 
+// --- UPLOAD ---
+router.use('/upload', uploadRoutes);
 module.exports = router;

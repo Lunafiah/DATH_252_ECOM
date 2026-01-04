@@ -4,6 +4,49 @@ import axiosClient from "../../../api/axiosClient";
 import toast from "react-hot-toast";
 import { useNavigate, Link } from "react-router-dom";
 
+// Move components outside to prevent re-creation on every render
+const MenuTab = ({ id, label, activeTab, setActiveTab }) => (
+    <button 
+        onClick={() => setActiveTab(id)}
+        className="btn text-start p-0 mb-4 position-relative d-flex align-items-center w-100 border-0 bg-transparent"
+        style={{
+            fontFamily: "'Lato', sans-serif",
+            fontSize: "0.85rem",
+            letterSpacing: "2px",
+            textTransform: "uppercase",
+            color: activeTab === id ? "#000" : "#999",
+            transition: "color 0.3s ease"
+        }}
+    >
+        {activeTab === id && <span className="me-3" style={{width: "20px", height: "1px", background: "#000"}}></span>}
+        {label}
+    </button>
+);
+
+const LuxuryInput = ({ label, value, onChange, type="text", disabled=false }) => (
+    <div className="mb-5">
+        <label className="d-block text-muted text-uppercase small mb-2" style={{fontSize: "0.7rem", letterSpacing: "1px"}}>{label}</label>
+        <input 
+            type={type} 
+            className="w-100" 
+            value={value} 
+            onChange={onChange} 
+            disabled={disabled}
+            placeholder={!value ? "Not set" : ""}
+            style={{
+                border: "none",
+                borderBottom: "1px solid #e5e5e5",
+                padding: "10px 0",
+                fontSize: "1.1rem",
+                fontFamily: "'Playfair Display', serif",
+                outline: "none",
+                background: "transparent",
+                color: disabled ? "#999" : "#000"
+            }}
+        />
+    </div>
+);
+
 const ProfilePage = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("settings");
@@ -66,47 +109,7 @@ const ProfilePage = () => {
   };
 
 
-  const MenuTab = ({ id, label }) => (
-      <button 
-          onClick={() => setActiveTab(id)}
-          className="btn text-start p-0 mb-4 position-relative d-flex align-items-center w-100 border-0 bg-transparent"
-          style={{
-              fontFamily: "'Lato', sans-serif",
-              fontSize: "0.85rem",
-              letterSpacing: "2px",
-              textTransform: "uppercase",
-              color: activeTab === id ? "#000" : "#999",
-              transition: "color 0.3s ease"
-          }}
-      >
-          {activeTab === id && <span className="me-3" style={{width: "20px", height: "1px", background: "#000"}}></span>}
-          {label}
-      </button>
-  );
 
-  const LuxuryInput = ({ label, value, onChange, type="text", disabled=false }) => (
-      <div className="mb-5">
-          <label className="d-block text-muted text-uppercase small mb-2" style={{fontSize: "0.7rem", letterSpacing: "1px"}}>{label}</label>
-          <input 
-              type={type} 
-              className="w-100" 
-              value={value} 
-              onChange={onChange} 
-              disabled={disabled}
-              placeholder={!value ? "Not set" : ""}
-              style={{
-                  border: "none",
-                  borderBottom: "1px solid #e5e5e5",
-                  padding: "10px 0",
-                  fontSize: "1.1rem",
-                  fontFamily: "'Playfair Display', serif",
-                  outline: "none",
-                  background: "transparent",
-                  color: disabled ? "#999" : "#000"
-              }}
-          />
-      </div>
-  );
 
   return (
     <>
@@ -132,9 +135,9 @@ const ProfilePage = () => {
                 {/* --- LEFT SIDEBAR --- */}
                 <div className="col-lg-3 mb-5">
                     <div className="sticky-top" style={{top: "150px"}}>
-                        <MenuTab id="settings" label="Profile & Security" />
-                        <MenuTab id="addresses" label="Address Book" />
-                        <MenuTab id="orders" label="Order History" />
+                        <MenuTab id="settings" label="Profile & Security" activeTab={activeTab} setActiveTab={setActiveTab} />
+                        <MenuTab id="addresses" label="Address Book" activeTab={activeTab} setActiveTab={setActiveTab} />
+                        <MenuTab id="orders" label="Order History" activeTab={activeTab} setActiveTab={setActiveTab} />
                         
                         <button onClick={logout} className="btn text-start p-0 mt-5 text-danger border-0 bg-transparent text-uppercase small" style={{letterSpacing: "2px", fontSize: "0.75rem"}}>
                             Sign Out

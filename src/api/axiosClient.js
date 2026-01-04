@@ -10,12 +10,12 @@ const axiosClient = axios.create({
 
 axiosClient.interceptors.request.use((config) => {
   const token = localStorage.getItem('token'); // Lấy token từ lúc đăng nhập
-  console.log('🔐 Axios Interceptor - Token from localStorage:', token ? token.substring(0, 20) + '...' : 'NO TOKEN');
+  console.log('Axios Interceptor - Token from localStorage:', token ? token.substring(0, 20) + '...' : 'NO TOKEN');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`; // Gửi kèm theo chuẩn Bearer
-    console.log('✅ Axios Interceptor - Authorization header set');
+    console.log('Axios Interceptor - Authorization header set');
   } else {
-    console.warn('⚠️ Axios Interceptor - NO TOKEN FOUND in localStorage!');
+    console.warn('Axios Interceptor - NO TOKEN FOUND in localStorage!');
   }
   return config;
 });

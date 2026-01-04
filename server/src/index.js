@@ -3,9 +3,9 @@
 require('dotenv').config();
 
 // Debug: Verify JWT_SECRET is loaded
-console.log('🔑 JWT_SECRET loaded:', process.env.JWT_SECRET ? 'YES ✅' : 'NO ❌');
+console.log('JWT_SECRET loaded:', process.env.JWT_SECRET ? 'YES' : 'NO');
 if (!process.env.JWT_SECRET) {
-  console.error('❌ WARNING: JWT_SECRET not found in .env file!');
+  console.error('WARNING: JWT_SECRET not found in .env file!');
 }
 
 const express = require('express');
@@ -16,12 +16,9 @@ const apiRoutes = require('./routes/index'); // Import file gộp routes
 connectDB();
 
 const app = express();
-app.use(express.json());
-app.use(cors({
-  origin: 'https://dath-252-ecom.vercel.app',
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  credentials: true
-}));
+app.use(express.json({ limit: '50mb' })); // Increased limit for base64 images/GLB files
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
+app.use(cors());
 
 // Sử dụng tất cả routes với tiền tố /api
 app.use('/api', apiRoutes);

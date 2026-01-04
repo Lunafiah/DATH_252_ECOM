@@ -21,14 +21,14 @@ const AdminDashboard = () => {
              axiosClient.get("/orders"),
              axiosClient.get("/stats")
         ]);
-        console.log('✅ Orders response:', ordersRes.data);
-        console.log('✅ Stats response:', statsRes.data);
+        console.log('Orders response:', ordersRes.data);
+        console.log('Stats response:', statsRes.data);
         setRecentOrders(ordersRes.data.slice(0, 5)); 
         setStats(statsRes.data);
       } catch (error) { 
-        console.error('❌ Dashboard fetch error:', error);
-        console.error('❌ Error response:', error.response?.data);
-        console.error('❌ Error status:', error.response?.status);
+        console.error('Dashboard fetch error:', error);
+        console.error('Error response:', error.response?.data);
+        console.error('Error status:', error.response?.status);
       } 
       finally { setLoading(false); }
     };

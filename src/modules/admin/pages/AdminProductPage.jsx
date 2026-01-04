@@ -51,11 +51,11 @@ const AdminProductPage = () => {
             toast.success("Product created successfully");
         }
         
-        console.log("✅ Product saved:", response.data);
+        console.log("Product saved:", response.data);
         setShowModal(false);
         fetchProducts();
     } catch (error) {
-        console.error("❌ Error saving product:", error.response?.data);
+        console.error("Error saving product:", error.response?.data);
         toast.error(error.response?.data?.message || "Operation failed. Check console for details.");
     }
 };

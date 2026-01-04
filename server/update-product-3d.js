@@ -10,7 +10,7 @@ const MONGODB_URI = process.env.MONGO_URI;
 async function updateProduct() {
   try {
     await mongoose.connect(MONGODB_URI);
-    console.log("✅ Connected to MongoDB");
+    console.log("Connected to MongoDB");
 
     // Import the Product model
     const Product = require('./src/models/product.model.js');
@@ -30,17 +30,17 @@ async function updateProduct() {
     );
 
     if (result) {
-      console.log("✅ Product updated successfully!");
+      console.log("Product updated successfully!");
       console.log("📦 Updated product:", result.title);
       console.log("🎨 3D Model data:", result.model3D);
     } else {
-      console.log("❌ Product not found");
+      console.log("Product not found");
     }
 
     await mongoose.connection.close();
-    console.log("✅ Connection closed");
+    console.log("Connection closed");
   } catch (error) {
-    console.error("❌ Error:", error);
+    console.error("Error:", error);
     process.exit(1);
   }
 }

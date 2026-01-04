@@ -11,8 +11,8 @@
     "isOnSale": false,
     "salePercentage": 0,
     "model3D": {
-      "glb": "https://modelviewer.dev/shared-assets/models/Astronaut.glb",
-      "usdz": "https://modelviewer.dev/shared-assets/models/Astronaut.usdz"
+      "glb": "/models/sofa.glb",
+      "usdz": "/models/sofa.usdz"
     }
   },
   {

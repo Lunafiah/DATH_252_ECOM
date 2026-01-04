@@ -59,8 +59,8 @@ Successfully implemented a complete AR/3D product visualization feature for LUXU
 
 I've created several specialized guides to help you maintain and expand this feature:
 
-- 📖 [Sketchfab Model Guide](file:///c:/Users/Lunafiah/.gemini/antigravity/brain/3846ca03-2ac8-4479-9ee5-bb6b43d84e75/sketchfab_guide.md): How to find and download more free furniture models.
-- 📖 [3D Model Replacement Guide](file:///c:/Users/Lunafiah/.gemini/antigravity/brain/3846ca03-2ac8-4479-9ee5-bb6b43d84e75/replace_astronaut_guide.md): Steps to update other products with new 3D assets.
+- 📖 [Sketchfab Model Guide](file:///c:/Users/Lunafiah/Desktop/Study/Đồ%20án%20CNPM/DATH_252_ECOM/docs/sketchfab_guide.md): How to find and download more free furniture models.
+- 📖 [3D Model Replacement Guide](file:///c:/Users/Lunafiah/Desktop/Study/Đồ%20án%20CNPM/DATH_252_ECOM/docs/3d_model_replacement_guide.md): Steps to update other products with new 3D assets.
 
 ---
 
