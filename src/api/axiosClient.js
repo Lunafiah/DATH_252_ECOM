@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const axiosClient = axios.create({
   // Thay 5000 bằng cổng server thực tế của bạn (5001 hoặc 8000 nếu bạn đã đổi)
-  baseURL: 'http://localhost:5001/api', 
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5001/api' 
   headers: {
     'Content-Type': 'application/json',
   },
